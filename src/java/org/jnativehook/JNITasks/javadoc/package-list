@@ -1,0 +1,6 @@
+org.jnitasks
+org.jnitasks.autotools
+org.jnitasks.pkgconfig
+org.jnitasks.toolchains
+org.jnitasks.toolchains.adapters
+org.jnitasks.types

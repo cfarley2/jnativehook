@@ -50,6 +50,7 @@ import java.awt.event.ItemListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.Date;
@@ -80,6 +81,7 @@ public class NativeHookDemo extends JFrame implements ActionListener, ItemListen
 
 	/** The text area to display event info. */
 	private JTextArea txtEventInfo;
+	private String txtEventInfoString;
 
 	/** Logging */
 	private static final Logger logger = Logger.getLogger(GlobalScreen.class.getPackage().getName());
@@ -164,6 +166,8 @@ public class NativeHookDemo extends JFrame implements ActionListener, ItemListen
 		txtEventInfo.setBackground(new Color(0xFF, 0xFF, 0xFF));
 		txtEventInfo.setForeground(new Color(0x00, 0x00, 0x00));
 		txtEventInfo.setText("");
+		
+		txtEventInfoString = new String("");
 
 		JScrollPane scrollPane = new JScrollPane(txtEventInfo);
 		scrollPane.setPreferredSize(new Dimension(375, 125));
@@ -222,6 +226,7 @@ public class NativeHookDemo extends JFrame implements ActionListener, ItemListen
 			}
 			catch (NativeHookException ex) {
 				txtEventInfo.append("Error: " + ex.getMessage() + "\n");
+				txtEventInfoString = txtEventInfoString + System.currentTimeMillis() + ",Error: " + ex.getMessage() + "\n";
 			}
 
 			// Set the enable menu item to the state of the hook.
@@ -339,6 +344,7 @@ public class NativeHookDemo extends JFrame implements ActionListener, ItemListen
 	 */
 	private void displayEventInfo(final NativeInputEvent e) {
 		txtEventInfo.append("\n" + e.paramString());
+		txtEventInfoString = txtEventInfoString + "\n" + System.currentTimeMillis() + "," + e.paramString();
 
 		try {
 			//Clean up the history to reduce memory consumption.
@@ -365,7 +371,16 @@ public class NativeHookDemo extends JFrame implements ActionListener, ItemListen
 	 *
 	 * @see java.awt.event.WindowListener#windowClosing(java.awt.event.WindowEvent)
 	 */
-	public void windowClosing(WindowEvent e) { /* Do Nothing */ }
+	public void windowClosing(WindowEvent e) { 
+		try {
+			txtEventInfoString = txtEventInfoString + "\nLogging ended at " + System.currentTimeMillis();
+			PrintWriter writer = new PrintWriter("mouselogger.csv", "UTF-8");
+			writer.println(txtEventInfoString); 
+			writer.close();
+		} catch (IOException ex) {
+			System.out.println("IOException");
+		}
+		}
 
 	/**
 	 * Unimplemented
@@ -410,6 +425,16 @@ public class NativeHookDemo extends JFrame implements ActionListener, ItemListen
 		txtEventInfo.append("\n" + "Pointer Acceleration Multiplier: " + System.getProperty("jnativehook.pointer.acceleration.multiplier"));
 		txtEventInfo.append("\n" + "Pointer Acceleration Threshold: " + System.getProperty("jnativehook.pointer.acceleration.threshold"));
 
+		txtEventInfoString = txtEventInfoString + "Logging started at " + System.currentTimeMillis();
+		txtEventInfoString = txtEventInfoString + "\nJNativeHook Version " + System.getProperty("jnativehook.lib.version");
+		txtEventInfoString = txtEventInfoString + "\nAuto Repeat Rate: " + System.getProperty("jnativehook.key.repeat.rate");
+		txtEventInfoString = txtEventInfoString + "\n" + "Auto Repeat Delay: " + System.getProperty("jnativehook.key.repeat.delay");
+		txtEventInfoString = txtEventInfoString + "\n" + "Double Click Time: " + System.getProperty("jnativehook.button.multiclick.iterval");
+		txtEventInfoString = txtEventInfoString + "\n" + "Pointer Sensitivity: " + System.getProperty("jnativehook.pointer.sensitivity");
+		txtEventInfoString = txtEventInfoString + "\n" + "Pointer Acceleration Multiplier: " + System.getProperty("jnativehook.pointer.acceleration.multiplier");
+		txtEventInfoString = txtEventInfoString + "\n" + "Pointer Acceleration Threshold: " + System.getProperty("jnativehook.pointer.acceleration.threshold");
+
+		
 		try {
 			txtEventInfo.setCaretPosition(txtEventInfo.getLineStartOffset(txtEventInfo.getLineCount() - 1));
 		}
@@ -468,7 +493,7 @@ public class NativeHookDemo extends JFrame implements ActionListener, ItemListen
 
 		SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
-				new NativeHookDemo();
+				NativeHookDemo new_hook = new NativeHookDemo();
 			}
 		});
 	}
